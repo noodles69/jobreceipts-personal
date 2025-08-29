@@ -13,15 +13,15 @@ function createInvoice(invoice, path) {
   doc.pipe(fs.createWriteStream(path));
 }
 
-function generateHeader(doc) {
+function generateHeader(doc, invoice) {
   doc
     .fillColor("#444444")
     .fontSize(20)
     .text("", 110, 57)
     .fontSize(10)
-    .text("Company", 200, 50, { align: "right" })
-    .text("123 Main Street", 200, 65, { align: "right" })
-    .text("Quinlan, TX 75474", 200, 80, { align: "right" })
+    .text(invoice.company.name, 200, 50, { align: "right" })
+    .text(invoice.company.phone, 200, 65, { align: "right" })
+    .text(invoice.company.email, 200, 80, { align: "right" })
     .moveDown();
 }
 
@@ -45,15 +45,15 @@ function generateCustomerInformation(doc, invoice) {
     )
 
     .font("Helvetica-Bold")
-    .text(invoice.shipping.name, 300, customerInformationTop)
+    .text(invoice.customer.name, 300, customerInformationTop)
     .font("Helvetica")
-    .text(invoice.shipping.address, 300, customerInformationTop + 15)
+    .text(invoice.customer.address, 300, customerInformationTop + 15)
     .text(
-      invoice.shipping.city +
+      invoice.customer.city +
         ", " +
-        invoice.shipping.state +
+        invoice.customer.state +
         ", " +
-        invoice.shipping.country,
+        invoice.customer.country,
       300,
       customerInformationTop + 30
     )
@@ -113,7 +113,7 @@ function generateFooter(doc) {
   doc
     .fontSize(10)
     .text(
-      "Payment was due upon completion. Thank you for your business.",
+      "Payment is due upon completion. Thank you for your business.",
       50,
       780,
       { align: "center", width: 500 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Invoice</title>
+</head>
+<body>
+  <h1>Create Invoice</h1>
+  <form id="invoiceForm">
+    <h3>Company</h3>
+    <input name="company[name]" placeholder="Company Name" required><br>
+    <input name="company[number]" placeholder="Phone"><br>
+    <input name="company[email]" placeholder="Email"><br>
+
+    <h3>Customer</h3>
+    <input name="customer[name]" placeholder="Customer Name" required><br>
+    <input name="customer[address]" placeholder="Address"><br>
+    <input name="customer[city]" placeholder="City"><br>
+    <input name="customer[state]" placeholder="State"><br>
+    <input name="customer[country]" placeholder="Country"><br>
+
+    <h3>Items</h3>
+    <div id="items">
+      <div class="item">
+        <input name="items[0][item]" placeholder="Item Name">
+        <input name="items[0][description]" placeholder="Description">
+        <input name="items[0][quantity]" type="number" placeholder="Qty">
+        <input name="items[0][amount]" type="number" placeholder="Amount (cents)">
+      </div>
+    </div>
+    <button type="button" onclick="addItem()">Add Item</button><br><br>
+
+    <h3>Payment</h3>
+    <input name="paid" type="number" placeholder="Paid (cents)" required><br><br>
+
+    <button type="submit">Generate PDF</button>
+  </form>
+
+  <script>
+    let itemCount = 1;
+    function addItem() {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <input name="items[${itemCount}][item]" placeholder="Item Name">
+        <input name="items[${itemCount}][description]" placeholder="Description">
+        <input name="items[${itemCount}][quantity]" type="number" placeholder="Qty">
+        <input name="items[${itemCount}][amount]" type="number" placeholder="Amount (cents)">
+      `;
+      document.getElementById("items").appendChild(div);
+      itemCount++;
+    }
+
+    document.getElementById("invoiceForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const obj = {};
+
+      formData.forEach((val, key) => {
+        const keys = key.split(/[\[\]]+/).filter(Boolean);
+        keys.reduce((o, k, i) =>
+          o[k] = (i === keys.length - 1 ? val : o[k] || {}), obj);
+      });
+
+      const res = await fetch("/generate-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+      });
+
+      // Trigger download
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "invoice.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>

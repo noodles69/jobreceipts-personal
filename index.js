@@ -1,31 +1,28 @@
-const { createInvoice } = require("./createInvoice.js");
+const express = require("express");
+const bodyParser = require("body-parser");
+const fs = require("fs");
+const path = require("path");
+const { createInvoice } = require("./createInvoice");
 
-const invoice = {
-  shipping: {
-    name: "John Doe",
-    address: "1234 Main Street",
-    city: "San Francisco",
-    state: "CA",
-    country: "US",
-    postal_code: 94111
-  },
-  items: [
-    {
-      item: "Item 1",
-      description: "Whatever you want",
-      quantity: 1,
-      amount: 100
-    },
-    {
-      item: "Item 2",
-      description: "Whatever you want",
-      quantity: 1,
-      amount: 100
-    }
-  ],
-  subtotal: 200,
-  paid: 0,
-  invoice_nr: 1234
-};
+const app = express();
+app.use(bodyParser.json());
+app.use(express.static("public"));
 
-createInvoice(invoice, "invoice.pdf");
+// Endpoint: save form data to JSON and return generated PDF
+app.post("/generate-invoice", (req, res) => {
+  const invoice = req.body;
+
+  // Save to invoiceData.json
+  fs.writeFileSync("invoiceData.json", JSON.stringify(invoice, null, 2));
+
+  // Generate PDF
+  const pdfPath = path.join(__dirname, "invoice.pdf");
+  createInvoice(invoice, pdfPath);
+
+  // Return file directly for download
+  res.download(pdfPath, "invoice.pdf");
+});
+
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});
