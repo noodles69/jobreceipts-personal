@@ -11,19 +11,19 @@ const invoice = {
   },
   items: [
     {
-      item: "TC 100",
-      description: "Toner Cartridge",
-      quantity: 2,
-      amount: 6000
+      item: "Item 1",
+      description: "Whatever you want",
+      quantity: 1,
+      amount: 100
     },
     {
-      item: "USB_EXT",
-      description: "USB Cable Extender",
+      item: "Item 2",
+      description: "Whatever you want",
       quantity: 1,
-      amount: 2000
+      amount: 100
     }
   ],
-  subtotal: 8000,
+  subtotal: 200,
   paid: 0,
   invoice_nr: 1234
 };
