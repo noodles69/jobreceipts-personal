@@ -1,84 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Create Invoice</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 3fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .item-row input {
+            margin-bottom: 0;
+        }
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-btn, .generate-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .generate-btn {
+            background-color: #28a745;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .add-btn:hover, .generate-btn:hover {
+            opacity: 0.9;
+        }
+        #total-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: right;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Create Invoice</h1>
-  <form id="invoiceForm">
-    <h3>Company</h3>
-    <input name="company[name]" placeholder="Company Name" required><br>
-    <input name="company[number]" placeholder="Phone"><br>
-    <input name="company[email]" placeholder="Email"><br>
+    <div class="form-container">
+        <h1 style="text-align: center; color: #333;">Invoice Generator</h1>
+        
+        <form id="invoiceForm">
+            <!-- Company Information -->
+            <div class="section">
+                <h3>Company Information</h3>
+                <div class="form-group">
+                    <label>Company Name:</label>
+                    <input type="text" id="companyName" value="Your Company Name">
+                </div>
+                <div class="form-group">
+                    <label>Phone:</label>
+                    <input type="text" id="companyPhone" value="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="companyEmail" value="info@yourcompany.com">
+                </div>
+            </div>
 
-    <h3>Customer</h3>
-    <input name="customer[name]" placeholder="Customer Name" required><br>
-    <input name="customer[address]" placeholder="Address"><br>
-    <input name="customer[city]" placeholder="City"><br>
-    <input name="customer[state]" placeholder="State"><br>
-    <input name="customer[country]" placeholder="Country"><br>
+            <!-- Customer Information -->
+            <div class="section">
+                <h3>Customer Information</h3>
+                <div class="form-group">
+                    <label>Customer Name:</label>
+                    <input type="text" id="customerName" value="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Address:</label>
+                    <input type="text" id="customerAddress" value="123 Main Street">
+                </div>
+                <div class="form-group">
+                    <label>City:</label>
+                    <input type="text" id="customerCity" value="New York">
+                </div>
+                <div class="form-group">
+                    <label>State:</label>
+                    <input type="text" id="customerState" value="NY">
+                </div>
+                <div class="form-group">
+                    <label>County:</label>
+                    <input type="text" id="customerCounty" value="USA">
+                </div>
+            </div>
 
-    <h3>Items</h3>
-    <div id="items">
-      <div class="item">
-        <input name="items[0][item]" placeholder="Item Name">
-        <input name="items[0][description]" placeholder="Description">
-        <input name="items[0][quantity]" type="number" placeholder="Qty">
-        <input name="items[0][amount]" type="number" placeholder="Amount (cents)">
-      </div>
+            <!-- Invoice Details -->
+            <div class="section">
+                <h3>Invoice Details</h3>
+                <div class="form-group">
+                    <label>Invoice Number:</label>
+                    <input type="text" id="invoiceNumber" placeholder="Auto-generated" readonly style="background-color: #f5f5f5;">
+                    <small style="color: #666;">Will be auto-generated based on today's date</small>
+                </div>
+                <div class="form-group">
+                    <label>Amount Paid ($):</label>
+                    <input type="number" id="amountPaid" value="0" step="0.01" min="0">
+                </div>
+
+            <!-- Items -->
+            <div class="section">
+                <h3>Invoice Items</h3>
+                <div id="itemsContainer">
+                    <div class="item-row">
+                        <div>
+                            <label>Item Name:</label>
+                            <input type="text" class="item-name" value="Web Development">
+                        </div>
+                        <div>
+                            <label>Description:</label>
+                            <input type="text" class="item-description" value="Custom website development">
+                        </div>
+                        <div>
+                            <label>Unit Cost ($):</label>
+                            <input type="number" class="item-cost" value="100" step="0.01" min="0">
+                        </div>
+                        <div>
+                            <label>Quantity:</label>
+                            <input type="number" class="item-quantity" value="10" min="1">
+                        </div>
+                        <div>
+                            <button type="button" class="remove-btn" onclick="removeItem(this)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="add-btn" onclick="addItem()">Add Item</button>
+                <div id="total-display">Total: $0.00</div>
+            </div>
+
+            <button type="submit" class="generate-btn">Generate Invoice PDF</button>
+        </form>
     </div>
-    <button type="button" onclick="addItem()">Add Item</button><br><br>
 
-    <h3>Payment</h3>
-    <input name="paid" type="number" placeholder="Paid (cents)" required><br><br>
+    <script>
+        function addItem() {
+            const container = document.getElementById('itemsContainer');
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.innerHTML = `
+                <div>
+                    <label>Item Name:</label>
+                    <input type="text" class="item-name" value="">
+                </div>
+                <div>
+                    <label>Description:</label>
+                    <input type="text" class="item-description" value="">
+                </div>
+                <div>
+                    <label>Unit Cost ($):</label>
+                    <input type="number" class="item-cost" value="0" step="0.01" min="0">
+                </div>
+                <div>
+                    <label>Quantity:</label>
+                    <input type="number" class="item-quantity" value="1" min="1">
+                </div>
+                <div>
+                    <button type="button" class="remove-btn" onclick="removeItem(this)">Remove</button>
+                </div>
+            `;
+            container.appendChild(itemRow);
+            
+            // Add event listeners for the new inputs
+            const newInputs = itemRow.querySelectorAll('.item-cost, .item-quantity');
+            newInputs.forEach(input => {
+                input.addEventListener('input', calculateTotal);
+            });
+            
+            calculateTotal();
+        }
 
-    <button type="submit">Generate PDF</button>
-  </form>
+        function removeItem(button) {
+            button.closest('.item-row').remove();
+            calculateTotal();
+        }
 
-  <script>
-    let itemCount = 1;
-    function addItem() {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <input name="items[${itemCount}][item]" placeholder="Item Name">
-        <input name="items[${itemCount}][description]" placeholder="Description">
-        <input name="items[${itemCount}][quantity]" type="number" placeholder="Qty">
-        <input name="items[${itemCount}][amount]" type="number" placeholder="Amount (cents)">
-      `;
-      document.getElementById("items").appendChild(div);
-      itemCount++;
-    }
+        function calculateTotal() {
+            let total = 0;
+            const itemRows = document.querySelectorAll('.item-row');
+            
+            itemRows.forEach(row => {
+                const cost = parseFloat(row.querySelector('.item-cost').value) || 0;
+                const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
+                total += cost * quantity;
+            });
+            
+            document.getElementById('total-display').textContent = `Total: $${total.toFixed(2)}`;
+        }
 
-    document.getElementById("invoiceForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const obj = {};
+        document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = document.querySelector('.generate-btn');
+            button.textContent = 'Generating PDF...';
+            button.disabled = true;
+            
+            try {
+                const items = [];
+                document.querySelectorAll('.item-row').forEach(row => {
+                    const name = row.querySelector('.item-name').value;
+                    const description = row.querySelector('.item-description').value;
+                    const cost = parseFloat(row.querySelector('.item-cost').value) || 0;
+                    const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
+                    
+                    if (name || description || cost > 0) {
+                        items.push({
+                            item: name,
+                            description: description,
+                            unitCost: cost,
+                            quantity: quantity
+                        });
+                    }
+                });
 
-      formData.forEach((val, key) => {
-        const keys = key.split(/[\[\]]+/).filter(Boolean);
-        keys.reduce((o, k, i) =>
-          o[k] = (i === keys.length - 1 ? val : o[k] || {}), obj);
-      });
+                const invoiceData = {
+                    company: {
+                        cmpyname: document.getElementById('companyName').value,
+                        phone: document.getElementById('companyPhone').value,
+                        email: document.getElementById('companyEmail').value
+                    },
+                    customer: {
+                        name: document.getElementById('customerName').value,
+                        address: document.getElementById('customerAddress').value,
+                        city: document.getElementById('customerCity').value,
+                        state: document.getElementById('customerState').value,
+                        country: document.getElementById('customerCounty').value
+                    },
+                    items: items,
+                    paid: parseFloat(document.getElementById('amountPaid').value) || 0
+                };
 
-      const res = await fetch("/generate-invoice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(obj)
-      });
+                const response = await fetch('/generate-invoice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(invoiceData)
+                });
 
-      // Trigger download
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "invoice.pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    });
-  </script>
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'invoice.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while generating the invoice');
+            } finally {
+                button.textContent = 'Generate Invoice PDF';
+                button.disabled = false;
+            }
+        });
+
+        // Add event listeners for real-time total calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.item-cost, .item-quantity');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateTotal);
+            });
+            calculateTotal();
+        });
+    </script>
 </body>
 </html>

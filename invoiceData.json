@@ -1,0 +1,24 @@
+{
+  "invoiceNumber": "INV08292025-6391",
+  "company": {
+    "cmpyname": "Your Company Name",
+    "phone": "(555) 123-4567",
+    "email": "info@yourcompany.com"
+  },
+  "customer": {
+    "name": "John Doe",
+    "address": "123 Main Street",
+    "city": "New York",
+    "state": "NY",
+    "country": "USA"
+  },
+  "items": [
+    {
+      "item": "Web Development",
+      "description": "Custom website development",
+      "unitCost": 100,
+      "quantity": 10
+    }
+  ],
+  "paid": 0
+}

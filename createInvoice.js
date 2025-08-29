@@ -4,73 +4,87 @@ const PDFDocument = require("pdfkit");
 function createInvoice(invoice, path) {
   let doc = new PDFDocument({ size: "A4", margin: 50 });
 
-  generateHeader(doc);
+  generateHeader(doc, invoice);
   generateCustomerInformation(doc, invoice);
   generateInvoiceTable(doc, invoice);
   generateFooter(doc);
 
   doc.end();
-  doc.pipe(fs.createWriteStream(path));
+  
+  return new Promise((resolve, reject) => {
+    const stream = fs.createWriteStream(path);
+    doc.pipe(stream);
+    
+    stream.on('finish', () => {
+      resolve();
+    });
+    
+    stream.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
 function generateHeader(doc, invoice) {
   doc
     .fillColor("#444444")
-    .fontSize(20)
-    .text("", 110, 57)
+    .fontSize(14)
+    .text(invoice.company?.cmpyname || "", 50, 50, { align: "center", width: 500 })
     .fontSize(10)
-    .text(invoice.company.name, 200, 50, { align: "right" })
-    .text(invoice.company.phone, 200, 65, { align: "right" })
-    .text(invoice.company.email, 200, 80, { align: "right" })
+    .text(invoice.company?.phone || "", 50, 70, { align: "center", width: 500 })
+    .text(invoice.company?.email || "", 50, 85, { align: "center", width: 500 })
     .moveDown();
 }
 
 function generateCustomerInformation(doc, invoice) {
-
-  const customerInformationTop = 200;
+  const customerInformationTop = 180;
+  
+  // Calculate totals from items
+  const subtotal = calculateSubtotal(invoice.items || []);
+  const amountPaid = invoice.paid || 0;
+  const balanceDue = subtotal - amountPaid;
 
   doc
     .fontSize(10)
     .text("Invoice Number:", 50, customerInformationTop)
     .font("Helvetica-Bold")
-    .text(invoice.invoice_nr, 150, customerInformationTop)
+    .text(invoice.invoiceNumber || generateInvoiceNumber(), 150, customerInformationTop)
     .font("Helvetica")
     .text("Invoice Date:", 50, customerInformationTop + 15)
     .text(formatDate(new Date()), 150, customerInformationTop + 15)
-    .text("Billed Amount:", 50, customerInformationTop + 30)
+    .text("Balance Due:", 50, customerInformationTop + 30)
     .text(
-      formatCurrency(invoice.subtotal - invoice.paid),
+      formatCurrency(balanceDue),
       150,
       customerInformationTop + 30
     )
 
     .font("Helvetica-Bold")
-    .text(invoice.customer.name, 300, customerInformationTop)
+    .text(invoice.customer?.name || "", 400, customerInformationTop)
     .font("Helvetica")
-    .text(invoice.customer.address, 300, customerInformationTop + 15)
+    .text(invoice.customer?.address || "", 400, customerInformationTop + 15)
     .text(
-      invoice.customer.city +
-        ", " +
-        invoice.customer.state +
-        ", " +
-        invoice.customer.country,
-      300,
+      (invoice.customer?.city || "") +
+        (invoice.customer?.state ? ", " + invoice.customer.state : "") +
+        (invoice.customer?.country ? ", " + invoice.customer.country : ""),
+      400,
       customerInformationTop + 30
     )
     .moveDown();
 
-  generateHr(doc, 252);
+  generateHr(doc, 232);
 }
 
 function generateInvoiceTable(doc, invoice) {
   let i;
-  const invoiceTableTop = 330;
+  const invoiceTableTop = 310;
+  const items = invoice.items || [];
 
   doc.font("Helvetica-Bold");
   generateTableRow(
     doc,
     invoiceTableTop,
-    "Name",
+    "Item",
     "Description",
     "Unit Cost",
     "Quantity",
@@ -79,33 +93,74 @@ function generateInvoiceTable(doc, invoice) {
   generateHr(doc, invoiceTableTop + 20);
   doc.font("Helvetica");
 
-  for (i = 0; i < invoice.items.length; i++) {
-    const item = invoice.items[i];
+  for (i = 0; i < items.length; i++) {
+    const item = items[i];
     const position = invoiceTableTop + (i + 1) * 30;
+    const unitCost = parseFloat(item.unitCost) || 0;
+    const quantity = parseInt(item.quantity) || 0;
+    const lineTotal = unitCost * quantity;
+    
     generateTableRow(
       doc,
       position,
-      item.item,
-      item.description,
-      formatCurrency(item.amount / item.quantity),
-      item.quantity,
-      formatCurrency(item.amount)
+      item.item || "",
+      item.description || "",
+      formatCurrency(unitCost),
+      quantity.toString(),
+      formatCurrency(lineTotal)
     );
 
     generateHr(doc, position + 20);
   }
 
-  const duePosition = invoiceTableTop + (i + 1) * 30;
+  // Calculate and display totals
+  const subtotal = calculateSubtotal(items);
+  const amountPaid = parseFloat(invoice.paid) || 0;
+  const balanceDue = subtotal - amountPaid;
+
+  const subtotalPosition = invoiceTableTop + (i + 1) * 30;
+  const paidPosition = subtotalPosition + 20;
+  const duePosition = paidPosition + 20;
+
   doc.font("Helvetica-Bold");
+  
+  // Subtotal
+  generateTableRow(
+    doc,
+    subtotalPosition,
+    "",
+    "",
+    "Subtotal:",
+    "",
+    formatCurrency(subtotal)
+  );
+
+  // Amount Paid
+  if (amountPaid > 0) {
+    doc.font("Helvetica");
+    generateTableRow(
+      doc,
+      paidPosition,
+      "",
+      "",
+      "Amount Paid:",
+      "",
+      formatCurrency(amountPaid)
+    );
+    doc.font("Helvetica-Bold");
+  }
+
+  // Balance Due
   generateTableRow(
     doc,
     duePosition,
     "",
     "",
-    "Total Billed",
+    "Balance Due:",
     "",
-    formatCurrency(invoice.paid)
+    formatCurrency(balanceDue)
   );
+  
   doc.font("Helvetica");
 }
 
@@ -113,9 +168,9 @@ function generateFooter(doc) {
   doc
     .fontSize(10)
     .text(
-      "Payment is due upon completion. Thank you for your business.",
+      "Payment is due upon job completion. Thank you for your business.",
       50,
-      780,
+      785,
       { align: "center", width: 500 }
     );
 }
@@ -147,8 +202,26 @@ function generateHr(doc, y) {
     .stroke();
 }
 
-function formatCurrency(cents) {
-  return "$" + (cents / 100).toFixed(2);
+function calculateSubtotal(items) {
+  return items.reduce((total, item) => {
+    const unitCost = parseFloat(item.unitCost) || 0;
+    const quantity = parseInt(item.quantity) || 0;
+    return total + (unitCost * quantity);
+  }, 0);
+}
+
+function generateInvoiceNumber() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const randomNum = Math.floor(Math.random() * 90) + 10;
+  
+  return `${year}${month}${day}-${randomNum}`;
+}
+
+function formatCurrency(dollars) {
+  return "$" + parseFloat(dollars).toFixed(2);
 }
 
 function formatDate(date) {
