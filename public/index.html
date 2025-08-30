@@ -105,15 +105,15 @@
                 <h3>Company Information</h3>
                 <div class="form-group">
                     <label>Company Name:</label>
-                    <input type="text" id="companyName" value="Your Company Name">
+                    <input type="text" id="companyName" value="">
                 </div>
                 <div class="form-group">
                     <label>Phone:</label>
-                    <input type="text" id="companyPhone" value="(555) 123-4567">
+                    <input type="text" id="companyPhone" value="">
                 </div>
                 <div class="form-group">
                     <label>Email:</label>
-                    <input type="email" id="companyEmail" value="info@yourcompany.com">
+                    <input type="email" id="companyEmail" value="">
                 </div>
             </div>
 
@@ -122,38 +122,25 @@
                 <h3>Customer Information</h3>
                 <div class="form-group">
                     <label>Customer Name:</label>
-                    <input type="text" id="customerName" value="John Doe">
+                    <input type="text" id="customerName" value="">
                 </div>
                 <div class="form-group">
                     <label>Address:</label>
-                    <input type="text" id="customerAddress" value="123 Main Street">
+                    <input type="text" id="customerAddress" value="">
                 </div>
                 <div class="form-group">
                     <label>City:</label>
-                    <input type="text" id="customerCity" value="New York">
+                    <input type="text" id="customerCity" value="">
                 </div>
                 <div class="form-group">
                     <label>State:</label>
-                    <input type="text" id="customerState" value="NY">
+                    <input type="text" id="customerState" value="">
                 </div>
                 <div class="form-group">
                     <label>County:</label>
-                    <input type="text" id="customerCounty" value="USA">
+                    <input type="text" id="customerZip" value="">
                 </div>
             </div>
-
-            <!-- Invoice Details -->
-            <div class="section">
-                <h3>Invoice Details</h3>
-                <div class="form-group">
-                    <label>Invoice Number:</label>
-                    <input type="text" id="invoiceNumber" placeholder="Auto-generated" readonly style="background-color: #f5f5f5;">
-                    <small style="color: #666;">Will be auto-generated based on today's date</small>
-                </div>
-                <div class="form-group">
-                    <label>Amount Paid ($):</label>
-                    <input type="number" id="amountPaid" value="0" step="0.01" min="0">
-                </div>
 
             <!-- Items -->
             <div class="section">
@@ -162,19 +149,19 @@
                     <div class="item-row">
                         <div>
                             <label>Item Name:</label>
-                            <input type="text" class="item-name" value="Web Development">
+                            <input type="text" class="item-name" value="New Equipment">
                         </div>
                         <div>
                             <label>Description:</label>
-                            <input type="text" class="item-description" value="Custom website development">
+                            <input type="text" class="item-description" value="Air Handler">
                         </div>
                         <div>
-                            <label>Unit Cost ($):</label>
-                            <input type="number" class="item-cost" value="100" step="0.01" min="0">
+                            <label>Unit Cost:</label>
+                            <input type="number" class="item-cost" value="1800" step="0.01" min="0">
                         </div>
                         <div>
                             <label>Quantity:</label>
-                            <input type="number" class="item-quantity" value="10" min="1">
+                            <input type="number" class="item-quantity" value="1" min="1">
                         </div>
                         <div>
                             <button type="button" class="remove-btn" onclick="removeItem(this)">Remove</button>
@@ -184,6 +171,24 @@
                 
                 <button type="button" class="add-btn" onclick="addItem()">Add Item</button>
                 <div id="total-display">Total: $0.00</div>
+            </div>
+
+        <!-- Invoice Details -->
+            <div class="section">
+                <h3>Invoice Details</h3>
+                <div class="form-group">
+                    <label>Invoice Number:</label>
+                    <input type="text" id="invoiceNumber" placeholder="">
+                    <small style="color: #666;">Leave blank for it to be today's date and a random number.</small>
+                </div>
+                <div class="form-group">
+                    <label>Amount Paid:</label>
+                    <input type="number" id="amountPaid" value="0" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Footnote:</label>
+                    <textarea id="noteadd" rows="3" placeholder="Payment is due upon job completion. Thank you for your business."></textarea>
+                </div>
             </div>
 
             <button type="submit" class="generate-btn">Generate Invoice PDF</button>
@@ -218,7 +223,7 @@
             `;
             container.appendChild(itemRow);
             
-            // Add event listeners for the new inputs
+            // Event listeners for the new inputs
             const newInputs = itemRow.querySelectorAll('.item-cost, .item-quantity');
             newInputs.forEach(input => {
                 input.addEventListener('input', calculateTotal);
@@ -281,10 +286,12 @@
                         address: document.getElementById('customerAddress').value,
                         city: document.getElementById('customerCity').value,
                         state: document.getElementById('customerState').value,
-                        country: document.getElementById('customerCounty').value
+                        zip: document.getElementById('customerZip').value
                     },
                     items: items,
-                    paid: parseFloat(document.getElementById('amountPaid').value) || 0
+                    paid: parseFloat(document.getElementById('amountPaid').value) || 0,
+                    invoiceNumber: document.getElementById('invoiceNumber').value || undefined,
+                    noteadd: document.getElementById('noteadd').value || ""
                 };
 
                 const response = await fetch('/generate-invoice', {
@@ -318,7 +325,7 @@
             }
         });
 
-        // Add event listeners for real-time total calculation
+        // Event listeners for real-time total calculation
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('.item-cost, .item-quantity');
             inputs.forEach(input => {

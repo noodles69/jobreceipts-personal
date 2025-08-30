@@ -1,24 +1,25 @@
 {
-  "invoiceNumber": "INV08292025-6391",
+  "invoiceNumber": "INV08302025-71",
   "company": {
     "cmpyname": "Your Company Name",
-    "phone": "(555) 123-4567",
-    "email": "info@yourcompany.com"
+    "phone": "(555)123-4567",
+    "email": "name@example.com"
   },
   "customer": {
     "name": "John Doe",
-    "address": "123 Main Street",
-    "city": "New York",
-    "state": "NY",
-    "country": "USA"
+    "address": "123 Elmo Street",
+    "city": "Royse City",
+    "state": "TX",
+    "country": "75189"
   },
   "items": [
     {
-      "item": "Web Development",
-      "description": "Custom website development",
-      "unitCost": 100,
-      "quantity": 10
+      "item": "New Equipment",
+      "description": "Air Handler",
+      "unitCost": 1800,
+      "quantity": 1
     }
   ],
-  "paid": 0
+  "paid": 0,
+  "noteadd": "Payment is due upon job completion. Thank you for your business."
 }

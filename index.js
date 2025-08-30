@@ -8,41 +8,40 @@ const app = express();
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// Endpoint: save form data to JSON and return generated PDF
 app.post("/generate-invoice", async (req, res) => {
   try {
     const invoice = req.body;
 
-    // Validate required data
+
     if (!invoice.items || !Array.isArray(invoice.items)) {
       return res.status(400).json({ error: "Invoice items are required" });
     }
 
-    // Generate invoice number if not provided
     function generateInvoiceNumber() {
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
-      const randomNum = Math.floor(Math.random() * 9000) + 10;
+      if (invoice.invoiceNumber) {
+        endNumbers = invoice.invoiceNumber
+      } else endNumbers = Math.floor(Math.random() * 90) + 10;
       
-      return `INV${month}${day}${year}-${randomNum}`;
+      return `INV${month}${day}${year}-${endNumbers}`;
     }
 
-    // Ensure proper data structure with defaults
     const processedInvoice = {
-      invoiceNumber: invoice.invoiceNumber || generateInvoiceNumber(),
+      invoiceNumber: generateInvoiceNumber(),
       company: {
         cmpyname: invoice.company?.cmpyname || "Your Company Name",
-        phone: invoice.company?.phone || "",
-        email: invoice.company?.email || ""
+        phone: invoice.company?.phone || "(555)123-4567",
+        email: invoice.company?.email || "name@example.com"
       },
       customer: {
-        name: invoice.customer?.name || "Customer Name",
-        address: invoice.customer?.address || "",
-        city: invoice.customer?.city || "",
-        state: invoice.customer?.state || "",
-        country: invoice.customer?.country || ""
+        name: invoice.customer?.name || "John Doe",
+        address: invoice.customer?.address || "123 Elmo Street",
+        city: invoice.customer?.city || "Royse City",
+        state: invoice.customer?.state || "TX",
+        country: invoice.customer?.zip || "75189"
       },
       items: invoice.items.map(item => ({
         item: item.item || "",
@@ -50,12 +49,13 @@ app.post("/generate-invoice", async (req, res) => {
         unitCost: parseFloat(item.unitCost) || 0,
         quantity: parseInt(item.quantity) || 0
       })),
-      paid: parseFloat(invoice.paid) || 0
+      paid: parseFloat(invoice.paid) || 0,
+      noteadd: invoice.noteadd || "Payment is due upon job completion. Thank you for your business."
     };
-
     // Save to invoiceData.json
     fs.writeFileSync("invoiceData.json", JSON.stringify(processedInvoice, null, 2));
 
+    //Trying to name the file be the invoicenumber
     // Generate PDF
     const pdfPath = path.join(__dirname, "invoice.pdf");
     
@@ -64,7 +64,8 @@ app.post("/generate-invoice", async (req, res) => {
 
     // Check if file exists before sending
     if (fs.existsSync(pdfPath)) {
-      res.download(pdfPath, "invoice.pdf", (err) => {
+    const pdfName = `${invoice.invoiceNumber}.pdf`;
+      res.download(pdfPath, pdfName, (err) => {
         if (err) {
           console.error("Error downloading file:", err);
           res.status(500).json({ error: "Error downloading PDF" });

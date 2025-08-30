@@ -7,7 +7,7 @@ function createInvoice(invoice, path) {
   generateHeader(doc, invoice);
   generateCustomerInformation(doc, invoice);
   generateInvoiceTable(doc, invoice);
-  generateFooter(doc);
+  generateFooter(doc, invoice);
 
   doc.end();
   
@@ -38,8 +38,7 @@ function generateHeader(doc, invoice) {
 
 function generateCustomerInformation(doc, invoice) {
   const customerInformationTop = 180;
-  
-  // Calculate totals from items
+
   const subtotal = calculateSubtotal(invoice.items || []);
   const amountPaid = invoice.paid || 0;
   const balanceDue = subtotal - amountPaid;
@@ -48,7 +47,7 @@ function generateCustomerInformation(doc, invoice) {
     .fontSize(10)
     .text("Invoice Number:", 50, customerInformationTop)
     .font("Helvetica-Bold")
-    .text(invoice.invoiceNumber || generateInvoiceNumber(), 150, customerInformationTop)
+    .text(invoice.invoiceNumber, 150, customerInformationTop)
     .font("Helvetica")
     .text("Invoice Date:", 50, customerInformationTop + 15)
     .text(formatDate(new Date()), 150, customerInformationTop + 15)
@@ -66,7 +65,7 @@ function generateCustomerInformation(doc, invoice) {
     .text(
       (invoice.customer?.city || "") +
         (invoice.customer?.state ? ", " + invoice.customer.state : "") +
-        (invoice.customer?.country ? ", " + invoice.customer.country : ""),
+        (invoice.customer?.zip ? ", " + invoice.customer.zip : ""),
       400,
       customerInformationTop + 30
     )
@@ -164,17 +163,17 @@ function generateInvoiceTable(doc, invoice) {
   doc.font("Helvetica");
 }
 
-function generateFooter(doc) {
+function generateFooter(doc, invoice) {
   doc
     .fontSize(10)
+    .font("Helvetica")
     .text(
-      "Payment is due upon job completion. Thank you for your business.",
+      invoice.noteadd,
       50,
-      785,
+      740,
       { align: "center", width: 500 }
     );
 }
-
 function generateTableRow(
   doc,
   y,
@@ -208,16 +207,6 @@ function calculateSubtotal(items) {
     const quantity = parseInt(item.quantity) || 0;
     return total + (unitCost * quantity);
   }, 0);
-}
-
-function generateInvoiceNumber() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const randomNum = Math.floor(Math.random() * 90) + 10;
-  
-  return `${year}${month}${day}-${randomNum}`;
 }
 
 function formatCurrency(dollars) {
