@@ -59,14 +59,14 @@ function generateCustomerInformation(doc, invoice) {
     )
 
     .font("Helvetica-Bold")
-    .text(invoice.customer?.name || "", 400, customerInformationTop)
+    .text(invoice.customer?.name || "", 440, customerInformationTop)
     .font("Helvetica")
-    .text(invoice.customer?.address || "", 400, customerInformationTop + 15)
+    .text(invoice.customer?.address || "", 440, customerInformationTop + 15)
     .text(
       (invoice.customer?.city || "") +
         (invoice.customer?.state ? ", " + invoice.customer.state : "") +
-        (invoice.customer?.zip ? ", " + invoice.customer.zip : ""),
-      400,
+        (invoice.customer?.zip ? " " + invoice.customer.zip : ""),
+      440,
       customerInformationTop + 30
     )
     .moveDown();
@@ -185,8 +185,8 @@ function generateTableRow(
 ) {
   doc
     .fontSize(10)
-    .text(item, 50, y)
-    .text(description, 150, y)
+    .text(item, 50, y, { width: 90})
+    .text(description, 150, y, { width: 160})
     .text(unitCost, 280, y, { width: 90, align: "right" })
     .text(quantity, 370, y, { width: 90, align: "right" })
     .text(lineTotal, 0, y, { align: "right" });

@@ -28,9 +28,10 @@ app.post("/generate-invoice", async (req, res) => {
       
       return `INV${month}${day}${year}-${endNumbers}`;
     }
+    let INVNum = generateInvoiceNumber()
 
     const processedInvoice = {
-      invoiceNumber: generateInvoiceNumber(),
+      invoiceNumber: INVNum,
       company: {
         cmpyname: invoice.company?.cmpyname || "Your Company Name",
         phone: invoice.company?.phone || "(555)123-4567",
@@ -41,7 +42,7 @@ app.post("/generate-invoice", async (req, res) => {
         address: invoice.customer?.address || "123 Elmo Street",
         city: invoice.customer?.city || "Royse City",
         state: invoice.customer?.state || "TX",
-        country: invoice.customer?.zip || "75189"
+        zip: invoice.customer?.zip || "75189"
       },
       items: invoice.items.map(item => ({
         item: item.item || "",
@@ -59,13 +60,12 @@ app.post("/generate-invoice", async (req, res) => {
     // Generate PDF
     const pdfPath = path.join(__dirname, "invoice.pdf");
     
-    // Wait for PDF generation to complete
     await createInvoice(processedInvoice, pdfPath);
 
-    // Check if file exists before sending
     if (fs.existsSync(pdfPath)) {
-    const pdfName = `${invoice.invoiceNumber}.pdf`;
-      res.download(pdfPath, pdfName, (err) => {
+      res.setHeader('Content-Type', 'application/pdf')
+      res.setHeader('Content-Disposition', `attachment; filename="${INVNum}"`)
+      res.sendFile(pdfPath, (err) => {
         if (err) {
           console.error("Error downloading file:", err);
           res.status(500).json({ error: "Error downloading PDF" });

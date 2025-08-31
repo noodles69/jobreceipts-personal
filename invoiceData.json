@@ -1,5 +1,5 @@
 {
-  "invoiceNumber": "INV08302025-71",
+  "invoiceNumber": "INV08302025-16",
   "company": {
     "cmpyname": "Your Company Name",
     "phone": "(555)123-4567",
@@ -10,12 +10,12 @@
     "address": "123 Elmo Street",
     "city": "Royse City",
     "state": "TX",
-    "country": "75189"
+    "zip": "75189"
   },
   "items": [
     {
-      "item": "New Equipment",
-      "description": "Air Handler",
+      "item": "New Equipmenttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+      "description": "Air Handlerttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
       "unitCost": 1800,
       "quantity": 1
     }
